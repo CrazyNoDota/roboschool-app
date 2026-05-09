@@ -42,9 +42,11 @@ export function Sidebar({ collapsed, setCollapsed }: { collapsed: boolean; setCo
       }}>
         <div style={{
           width:36, height:36, borderRadius:10, flexShrink:0,
-          background:'var(--primary)', display:'flex', alignItems:'center', justifyContent:'center',
-          fontSize:18, fontWeight:800, color:'#fff'
-        }}>⚙</div>
+          border:'2px dashed var(--border)', background:'var(--bg)',
+          display:'flex', alignItems:'center', justifyContent:'center'
+        }}>
+          <span style={{fontSize:8,color:'var(--text-faint)',fontWeight:600,letterSpacing:0.5,textTransform:'uppercase',lineHeight:1.2,textAlign:'center'}}>logo</span>
+        </div>
         {!collapsed && (
           <div>
             <div style={{fontSize:15,fontWeight:800,color:'var(--text)',lineHeight:1.2}}>RoboSchool</div>

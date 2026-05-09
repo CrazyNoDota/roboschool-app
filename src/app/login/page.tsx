@@ -60,29 +60,17 @@ export default function LoginPage() {
       }} className="login-left">
         <div style={{position:'absolute',top:-80,right:-80,width:320,height:320,borderRadius:'50%',background:'rgba(255,255,255,0.07)'}} />
         <div style={{position:'absolute',bottom:-60,left:-60,width:240,height:240,borderRadius:'50%',background:'rgba(255,255,255,0.05)'}} />
-        <svg width="220" height="240" viewBox="0 0 220 240" fill="none" style={{position:'relative',zIndex:1}}>
-          <rect x="60" y="100" width="100" height="90" rx="16" fill="white" fillOpacity="0.18"/>
-          <rect x="60" y="100" width="100" height="90" rx="16" stroke="white" strokeOpacity="0.5" strokeWidth="2"/>
-          <rect x="72" y="52" width="76" height="58" rx="14" fill="white" fillOpacity="0.22"/>
-          <rect x="72" y="52" width="76" height="58" rx="14" stroke="white" strokeOpacity="0.5" strokeWidth="2"/>
-          <circle cx="96" cy="74" r="10" fill="var(--accent)" fillOpacity="0.9"/>
-          <circle cx="124" cy="74" r="10" fill="var(--accent)" fillOpacity="0.9"/>
-          <circle cx="99" cy="71" r="3" fill="white"/>
-          <circle cx="127" cy="71" r="3" fill="white"/>
-          <rect x="90" y="92" width="40" height="8" rx="4" fill="white" fillOpacity="0.6"/>
-          <line x1="110" y1="52" x2="110" y2="28" stroke="white" strokeOpacity="0.6" strokeWidth="2.5" strokeLinecap="round"/>
-          <circle cx="110" cy="22" r="7" fill="var(--accent)" fillOpacity="0.9"/>
-          <rect x="24" y="108" width="36" height="22" rx="11" fill="white" fillOpacity="0.15" stroke="white" strokeOpacity="0.4" strokeWidth="1.5"/>
-          <rect x="160" y="108" width="36" height="22" rx="11" fill="white" fillOpacity="0.15" stroke="white" strokeOpacity="0.4" strokeWidth="1.5"/>
-          <rect x="76" y="190" width="28" height="36" rx="10" fill="white" fillOpacity="0.15" stroke="white" strokeOpacity="0.4" strokeWidth="1.5"/>
-          <rect x="116" y="190" width="28" height="36" rx="10" fill="white" fillOpacity="0.15" stroke="white" strokeOpacity="0.4" strokeWidth="1.5"/>
-          <rect x="82" y="120" width="56" height="32" rx="8" fill="white" fillOpacity="0.1" stroke="white" strokeOpacity="0.3" strokeWidth="1.5"/>
-          <circle cx="99" cy="136" r="5" fill="var(--accent)" fillOpacity="0.7"/>
-          <circle cx="110" cy="136" r="5" fill="white" fillOpacity="0.4"/>
-          <circle cx="121" cy="136" r="5" fill="white" fillOpacity="0.4"/>
-        </svg>
+        <div style={{
+          position:'relative',zIndex:1,
+          width:160,height:160,borderRadius:24,
+          border:'2.5px dashed rgba(255,255,255,0.35)',
+          background:'rgba(255,255,255,0.08)',
+          display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:10
+        }}>
+          <div style={{fontSize:13,color:'rgba(255,255,255,0.5)',fontWeight:600,letterSpacing:1,textTransform:'uppercase'}}>Логотип</div>
+          <div style={{fontSize:11,color:'rgba(255,255,255,0.35)'}}>placeholder</div>
+        </div>
         <div style={{textAlign:'center',position:'relative',zIndex:1}}>
-          <div style={{fontSize:22,fontWeight:800,color:'#fff',marginBottom:8}}>RoboSchool</div>
           <div style={{fontSize:14,color:'rgba(255,255,255,0.75)',lineHeight:1.5,maxWidth:260}}>
             {lang==='ru' ? 'Управляйте занятиями, учениками и финансами в одном месте' : 'Сабақтарды, оқушыларды және қаражатты бір жерде басқарыңыз'}
           </div>
@@ -105,7 +93,13 @@ export default function LoginPage() {
 
         <div style={{marginBottom:32}}>
           <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16}}>
-            <div style={{width:40,height:40,borderRadius:10,background:'var(--primary)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>⚙</div>
+            <div style={{
+              width:40,height:40,borderRadius:10,flexShrink:0,
+              border:'2px dashed var(--border)',background:'var(--bg)',
+              display:'flex',alignItems:'center',justifyContent:'center'
+            }}>
+              <span style={{fontSize:9,color:'var(--text-faint)',fontWeight:600,letterSpacing:0.5,textTransform:'uppercase',lineHeight:1.2,textAlign:'center'}}>logo</span>
+            </div>
             <span style={{fontSize:18,fontWeight:800,color:'var(--text)'}}>RoboSchool</span>
           </div>
           <h2 style={{margin:0,fontSize:24,fontWeight:800,color:'var(--text)'}}>{t.title}</h2>
