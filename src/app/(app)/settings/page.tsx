@@ -51,7 +51,7 @@ export default function SettingsPage() {
         <Card style={{padding:24}}>
           <div style={{fontWeight:700,fontSize:15,marginBottom:8}}>ℹ️ О системе</div>
           <div style={{fontSize:13,color:'var(--text-muted)',lineHeight:1.6}}>
-            <div>RoboSchool — система управления школой робототехники</div>
+            <div>Robostars — система управления школой робототехники</div>
             <div style={{marginTop:4}}>Версия 1.0 MVP · Алматы, Казахстан</div>
           </div>
         </Card>

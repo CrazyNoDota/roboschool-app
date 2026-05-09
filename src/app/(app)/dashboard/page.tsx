@@ -75,7 +75,7 @@ export default function DashboardPage() {
       />
 
       <div style={{display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(180px,1fr))', gap:16, marginBottom:28}}>
-        <KpiCard label="Активных учеников" value={students.length} sub="+2 за этот месяц" color="var(--primary)" icon="👤" onClick={() => router.push('/students')} />
+        <KpiCard label="Активных учеников" value={students.length} sub="Текущий месяц" color="var(--primary)" icon="👤" onClick={() => router.push('/students')} />
         <KpiCard label="Просрочили оплату" value={overdueStudents} sub="Требует внимания" color="var(--red)" icon="⚠️" onClick={() => router.push('/payments')} />
         <KpiCard label="Занятий сегодня" value={todayLessons.length} sub={todayLessons.map(l=>(l.group as any)?.name).filter(Boolean).join(', ')||'Нет занятий'} color="var(--primary)" icon="📅" onClick={() => router.push('/schedule')} />
         <KpiCard label={`Доходы (${monthName})`} value={fmt.money(totalIncome)} sub="Текущий месяц" color="var(--green)" icon="💰" onClick={() => router.push('/finances')} />

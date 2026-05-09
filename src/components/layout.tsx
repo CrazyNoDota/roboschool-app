@@ -49,7 +49,7 @@ export function Sidebar({ collapsed, setCollapsed }: { collapsed: boolean; setCo
         </div>
         {!collapsed && (
           <div>
-            <div style={{fontSize:15,fontWeight:800,color:'var(--text)',lineHeight:1.2}}>RoboSchool</div>
+            <div style={{fontSize:15,fontWeight:800,color:'var(--text)',lineHeight:1.2}}>Robostars</div>
             <div style={{fontSize:11,color:'var(--text-faint)',fontWeight:500}}>Алматы</div>
           </div>
         )}

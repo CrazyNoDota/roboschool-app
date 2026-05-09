@@ -14,8 +14,8 @@ export default function LoginPage() {
   const [showPass, setShowPass] = useState(false)
 
   const t = {
-    ru: { title:'Добро пожаловать!', sub:'Войдите в систему управления', email:'Email', pass:'Пароль', btn:'Войти', forgot:'Забыли пароль?', demo:'Войти как демо' },
-    kz: { title:'Қош келдіңіз!',    sub:'Басқару жүйесіне кіріңіз',    email:'Email', pass:'Құпия сөз', btn:'Кіру', forgot:'Құпия сөзді ұмыттыңыз ба?', demo:'Демо ретінде кіру' },
+    ru: { title:'Добро пожаловать!', sub:'Войдите в систему управления', email:'Email', pass:'Пароль', btn:'Войти', forgot:'Забыли пароль?' },
+    kz: { title:'Қош келдіңіз!',    sub:'Басқару жүйесіне кіріңіз',    email:'Email', pass:'Құпия сөз', btn:'Кіру', forgot:'Құпия сөзді ұмыттыңыз ба?' },
   }[lang]
 
   const handleLogin = async (e?: React.FormEvent) => {
@@ -27,22 +27,6 @@ export default function LoginPage() {
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
     if (authError) {
       setError('Неверный email или пароль')
-      setLoading(false)
-    } else {
-      router.push('/dashboard')
-      router.refresh()
-    }
-  }
-
-  const handleDemo = async () => {
-    setLoading(true)
-    const supabase = createClient()
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email: 'admin@roboschool.kz',
-      password: 'demo123456'
-    })
-    if (authError) {
-      setError('Демо-аккаунт временно недоступен')
       setLoading(false)
     } else {
       router.push('/dashboard')
@@ -100,7 +84,7 @@ export default function LoginPage() {
             }}>
               <span style={{fontSize:9,color:'var(--text-faint)',fontWeight:600,letterSpacing:0.5,textTransform:'uppercase',lineHeight:1.2,textAlign:'center'}}>logo</span>
             </div>
-            <span style={{fontSize:18,fontWeight:800,color:'var(--text)'}}>RoboSchool</span>
+            <span style={{fontSize:18,fontWeight:800,color:'var(--text)'}}>Robostars</span>
           </div>
           <h2 style={{margin:0,fontSize:24,fontWeight:800,color:'var(--text)'}}>{t.title}</h2>
           <p style={{margin:'6px 0 0',fontSize:14,color:'var(--text-muted)'}}>{t.sub}</p>
@@ -108,7 +92,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} style={{display:'flex',flexDirection:'column',gap:16}}>
           <Input label={t.email} value={email} onChange={setEmail} type="email"
-            placeholder="admin@roboschool.kz" icon="✉" error={error && !email ? error : ''} />
+            placeholder="admin@robostars.kz" icon="✉" error={error && !email ? error : ''} />
           <div style={{display:'flex',flexDirection:'column',gap:4}}>
             <label style={{fontSize:13,fontWeight:600,color:'var(--text-muted)'}}>{t.pass}</label>
             <div style={{position:'relative'}}>
@@ -134,14 +118,10 @@ export default function LoginPage() {
           <Btn type="submit" full disabled={loading} size="lg" style={{marginTop:4}}>
             {loading ? '⏳ Загрузка...' : t.btn}
           </Btn>
-
-          <div style={{borderTop:'1.5px solid var(--border)',paddingTop:16,textAlign:'center'}}>
-            <Btn variant="outline" full onClick={handleDemo} disabled={loading}>{t.demo}</Btn>
-          </div>
         </form>
 
         <div style={{position:'absolute',bottom:24,left:40,right:40,textAlign:'center',fontSize:12,color:'var(--text-faint)'}}>
-          © 2026 RoboSchool · Алматы, Казахстан
+          © 2026 Robostars · Алматы, Казахстан
         </div>
       </div>
     </div>

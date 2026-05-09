@@ -123,7 +123,7 @@ function AddEmployeeModal({ open, onClose, onAdded }: { open: boolean; onClose: 
           <Input label="Телефон" value={form.phone} onChange={set('phone')} placeholder="+7 701 000 0000" />
           <Input label="Оклад (₸)" value={form.salary} onChange={set('salary')} type="number" placeholder="150000" />
         </div>
-        <Input label="Email" value={form.email} onChange={set('email')} type="email" placeholder="ivan@roboschool.kz" />
+        <Input label="Email" value={form.email} onChange={set('email')} type="email" placeholder="ivan@robostars.kz" />
         <div style={{display:'flex',gap:10,justifyContent:'flex-end',marginTop:8}}>
           <Btn variant="outline" onClick={onClose}>Отмена</Btn>
           <Btn onClick={handleSave} disabled={saving}>{saving ? 'Сохранение...' : 'Добавить'}</Btn>
