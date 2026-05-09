@@ -19,6 +19,21 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
   const [tab, setTab] = useState('attendance')
   const [showEdit, setShowEdit] = useState(false)
   const [showPayment, setShowPayment] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
+  const handleDelete = async () => {
+    if (!student) return
+    if (!confirm(`Удалить ученика «${student.name}»? Все платежи и записи посещаемости будут удалены безвозвратно.`)) return
+    setDeleting(true)
+    const supabase = createClient()
+    const { error } = await supabase.from('students').delete().eq('id', student.id)
+    if (error) {
+      alert('Ошибка при удалении: ' + error.message)
+      setDeleting(false)
+      return
+    }
+    router.push('/students')
+  }
 
   const load = async () => {
     const supabase = createClient()
@@ -58,6 +73,7 @@ export default function StudentDetailPage({ params }: { params: Promise<{ id: st
           <div style={{display:'flex',gap:8}}>
             <Btn variant="outline" size="sm" icon="✏️" onClick={() => setShowEdit(true)}>Редактировать</Btn>
             <Btn variant="secondary" size="sm" icon="+" onClick={() => setShowPayment(true)}>Платёж</Btn>
+            <Btn variant="danger" size="sm" icon="🗑" onClick={handleDelete} disabled={deleting}>{deleting ? 'Удаление...' : 'Удалить'}</Btn>
           </div>
         }
       />

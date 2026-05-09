@@ -2,10 +2,10 @@
 import React, { useState, useEffect } from 'react'
 import { use } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Btn, Card, Badge, Tabs, EmptyState, Avatar, AttendanceDot, fmt, Skeleton } from '@/components/ui'
+import { Btn, Card, Badge, Tabs, EmptyState, Avatar, AttendanceDot, Modal, Input, Select, fmt, Skeleton } from '@/components/ui'
 import { TopBar } from '@/components/layout'
 import { useRouter } from 'next/navigation'
-import type { Group, Student, Lesson } from '@/types'
+import type { Group, Student, Lesson, Employee } from '@/types'
 
 export default function GroupDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -14,19 +14,24 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
   const [students, setStudents] = useState<Student[]>([])
   const [lessons, setLessons] = useState<Lesson[]>([])
   const [attendance, setAttendance] = useState<any[]>([])
+  const [employees, setEmployees] = useState<Employee[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState('roster')
+  const [showEdit, setShowEdit] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const load = async () => {
     const supabase = createClient()
-    const [grpRes, sgRes, lesRes] = await Promise.all([
+    const [grpRes, sgRes, lesRes, empRes] = await Promise.all([
       supabase.from('groups').select('*, teacher:employees(id,name)').eq('id', id).single(),
       supabase.from('student_groups').select('students(*)').eq('group_id', id),
       supabase.from('lessons').select('*').eq('group_id', id).order('date').order('start_time'),
+      supabase.from('employees').select('*').eq('active', true).order('name'),
     ])
     if (grpRes.data) setGroup(grpRes.data as any)
     if (sgRes.data) setStudents(sgRes.data.map((r: any) => r.students).filter(Boolean))
     if (lesRes.data) setLessons(lesRes.data)
+    if (empRes.data) setEmployees(empRes.data)
 
     const lessonIds = lesRes.data?.map((l: any) => l.id) || []
     if (lessonIds.length > 0) {
@@ -37,6 +42,20 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
   }
 
   useEffect(() => { load() }, [id])
+
+  const handleDelete = async () => {
+    if (!group) return
+    if (!confirm(`Удалить группу «${group.name}»? Все занятия и записи посещаемости этой группы будут удалены безвозвратно.`)) return
+    setDeleting(true)
+    const supabase = createClient()
+    const { error } = await supabase.from('groups').delete().eq('id', group.id)
+    if (error) {
+      alert('Ошибка при удалении: ' + error.message)
+      setDeleting(false)
+      return
+    }
+    router.push('/groups')
+  }
 
   if (loading) return <div style={{padding:32}}><Skeleton height={200} radius={12} /></div>
   if (!group) return <div style={{padding:32}}>Группа не найдена</div>
@@ -54,7 +73,8 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
       <TopBar title={group.name} onBack={() => router.push('/groups')}
         actions={
           <div style={{display:'flex',gap:8}}>
-            <Btn variant="outline" size="sm" icon="✏️">Редактировать</Btn>
+            <Btn variant="outline" size="sm" icon="✏️" onClick={() => setShowEdit(true)}>Редактировать</Btn>
+            <Btn variant="danger" size="sm" icon="🗑" onClick={handleDelete} disabled={deleting}>{deleting ? 'Удаление...' : 'Удалить'}</Btn>
             {upcoming[0] && <Btn size="sm" icon="✅" onClick={() => router.push(`/attendance/${upcoming[0].id}`)}>Отметить посещаемость</Btn>}
           </div>
         }
@@ -145,6 +165,8 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           </div>
         )}
 
+        <EditGroupModal open={showEdit} onClose={() => setShowEdit(false)} group={group} employees={employees} onSaved={load} />
+
         {tab === 'attendance' && (
           past.length === 0 ? <EmptyState icon="📋" title="Нет прошедших занятий" /> : (
             <Card style={{overflow:'auto'}}>
@@ -180,5 +202,97 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
         )}
       </div>
     </div>
+  )
+}
+
+function EditGroupModal({ open, onClose, group, employees, onSaved }: {
+  open: boolean; onClose: () => void; group: Group; employees: Employee[]; onSaved: () => void
+}) {
+  const [form, setForm] = useState({
+    name: group.name,
+    level: group.level,
+    teacherId: (group as any).teacher?.id || '',
+    days: group.days || '',
+    time: group.time || '',
+    duration: String(group.duration || 90),
+    maxStudents: String(group.max_students || 8),
+    color: group.color || '#0ea5e9',
+    ageRange: group.age_range || '',
+    kitType: group.kit_type || '',
+  })
+  const [saving, setSaving] = useState(false)
+  const set = (k: string) => (v: string) => setForm(f => ({...f,[k]:v}))
+
+  useEffect(() => {
+    setForm({
+      name: group.name,
+      level: group.level,
+      teacherId: (group as any).teacher?.id || '',
+      days: group.days || '',
+      time: group.time || '',
+      duration: String(group.duration || 90),
+      maxStudents: String(group.max_students || 8),
+      color: group.color || '#0ea5e9',
+      ageRange: group.age_range || '',
+      kitType: group.kit_type || '',
+    })
+  }, [group])
+
+  const handleSave = async () => {
+    if (!form.name) return
+    setSaving(true)
+    const supabase = createClient()
+    await supabase.from('groups').update({
+      name: form.name,
+      level: form.level,
+      teacher_id: form.teacherId || null,
+      days: form.days,
+      time: form.time,
+      duration: parseInt(form.duration),
+      max_students: parseInt(form.maxStudents),
+      color: form.color,
+      age_range: form.ageRange,
+      kit_type: form.kitType,
+    }).eq('id', group.id)
+    setSaving(false)
+    onSaved()
+    onClose()
+  }
+
+  const teachers = employees.filter(e => e.role === 'Учитель')
+
+  return (
+    <Modal open={open} onClose={onClose} title="Редактировать группу">
+      <div style={{display:'flex',flexDirection:'column',gap:14}}>
+        <Input label="Название группы" value={form.name} onChange={set('name')} />
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+          <Select label="Уровень" value={form.level} onChange={set('level')}
+            options={[{value:'beginner',label:'Начинающие'},{value:'intermediate',label:'Средний'},{value:'advanced',label:'Продвинутые'}]} />
+          <Select label="Учитель" value={form.teacherId} onChange={set('teacherId')}
+            options={[{value:'',label:'Не выбран'}, ...teachers.map(e=>({value:e.id,label:e.name}))]} />
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+          <Input label="Дни" value={form.days} onChange={set('days')} placeholder="Вт, Чт" />
+          <Input label="Время" value={form.time} onChange={set('time')} placeholder="16:00" />
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:12}}>
+          <Input label="Длит. (мин)" value={form.duration} onChange={set('duration')} type="number" />
+          <Input label="Макс. учеников" value={form.maxStudents} onChange={set('maxStudents')} type="number" />
+          <div style={{display:'flex',flexDirection:'column',gap:4}}>
+            <label style={{fontSize:13,fontWeight:600,color:'var(--text-muted)'}}>Цвет</label>
+            <input type="color" value={form.color} onChange={e=>set('color')(e.target.value)}
+              style={{height:42,width:'100%',borderRadius:10,border:'1.5px solid var(--border)',cursor:'pointer',padding:4}} />
+          </div>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+          <Input label="Возраст" value={form.ageRange} onChange={set('ageRange')} placeholder="9–12" />
+          <Input label="Набор" value={form.kitType} onChange={set('kitType')} placeholder="Mindstorms EV3" />
+        </div>
+        <div style={{display:'flex',gap:10,justifyContent:'flex-end',marginTop:8}}>
+          <Btn variant="outline" onClick={onClose}>Отмена</Btn>
+          <Btn onClick={handleSave} disabled={saving}>{saving ? 'Сохранение...' : 'Сохранить'}</Btn>
+        </div>
+      </div>
+    </Modal>
   )
 }
