@@ -1,26 +1,59 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --primary:       oklch(0.50 0.18 222);
+  --primary-light: oklch(0.95 0.05 222);
+  --primary-dark:  oklch(0.38 0.18 222);
+  --accent:        oklch(0.70 0.17 62);
+  --accent-light:  oklch(0.96 0.05 62);
+  --bg:            oklch(0.975 0.005 222);
+  --surface:       #ffffff;
+  --text:          oklch(0.17 0.015 230);
+  --text-muted:    oklch(0.48 0.02 225);
+  --text-faint:    oklch(0.68 0.01 225);
+  --border:        oklch(0.91 0.008 225);
+  --green:         oklch(0.55 0.16 150);
+  --green-bg:      oklch(0.96 0.05 150);
+  --amber:         oklch(0.68 0.16 72);
+  --amber-bg:      oklch(0.97 0.05 72);
+  --red:           oklch(0.54 0.18 20);
+  --red-bg:        oklch(0.97 0.05 20);
+  --grey:          oklch(0.60 0.01 225);
+  --grey-bg:       oklch(0.94 0.005 225);
+  --radius:        12px;
+  --shadow:        0 1px 3px oklch(0.17 0.015 230 / 0.07), 0 1px 2px oklch(0.17 0.015 230 / 0.04);
+  --shadow-md:     0 4px 12px oklch(0.17 0.015 230 / 0.08), 0 2px 4px oklch(0.17 0.015 230 / 0.04);
+  --shadow-lg:     0 16px 32px oklch(0.17 0.015 230 / 0.12), 0 4px 8px oklch(0.17 0.015 230 / 0.06);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: 'Manrope', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@media (max-width: 767px) {
+  .login-left { display: none !important; }
+  .login-right { width: 100% !important; }
 }
+
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+p, li, td, th { text-wrap: pretty; }
