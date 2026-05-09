@@ -119,11 +119,10 @@ export default function PaymentsPage() {
                   <Btn size="sm" icon="+" onClick={() => setShowRecord(true)}>Записать платёж</Btn>
                 </div>
               </div>
-              <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:12,marginBottom:20}}>
+              <div style={{display:'grid',gridTemplateColumns:'repeat(2,1fr)',gap:12,marginBottom:20}}>
                 {[
                   {label:'Всего оплачено', value:fmt.money(studentPayments.reduce((s,p)=>s+p.amount,0)), color:'var(--green)'},
                   {label:'Платежей всего', value:studentPayments.length, color:'var(--primary)'},
-                  {label:'Ежемес. взнос', value:fmt.money(25000), color:'var(--text-muted)'},
                 ].map(c => (
                   <div key={c.label} style={{padding:'12px',borderRadius:10,background:'var(--bg)',textAlign:'center'}}>
                     <div style={{fontSize:18,fontWeight:800,color:c.color}}>{c.value}</div>

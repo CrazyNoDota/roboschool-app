@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react'
 import { use } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Btn, Card, Avatar, Badge, fmt, Skeleton } from '@/components/ui'
+import { Btn, Card, Avatar, Badge, Modal, Input, Select, fmt, Skeleton } from '@/components/ui'
 import { TopBar } from '@/components/layout'
 import { useRouter } from 'next/navigation'
 
@@ -13,30 +13,45 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
   const [groups, setGroups] = useState<any[]>([])
   const [lessonCount, setLessonCount] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [showEdit, setShowEdit] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
-  useEffect(() => {
-    const load = async () => {
-      const supabase = createClient()
-      const now = new Date()
-      const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
-      const [empRes, grpRes] = await Promise.all([
-        supabase.from('employees').select('*').eq('id', id).single(),
-        supabase.from('groups').select('*').eq('teacher_id', id),
-      ])
-      if (empRes.data) setEmployee(empRes.data)
-      if (grpRes.data) {
-        setGroups(grpRes.data)
-        if (grpRes.data.length > 0) {
-          const groupIds = grpRes.data.map((g: any) => g.id)
-          const { count } = await supabase.from('lessons').select('*', {count:'exact',head:true})
-            .in('group_id', groupIds).gte('date', firstOfMonth).eq('status', 'completed')
-          setLessonCount(count || 0)
-        }
+  const load = async () => {
+    const supabase = createClient()
+    const now = new Date()
+    const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+    const [empRes, grpRes] = await Promise.all([
+      supabase.from('employees').select('*').eq('id', id).single(),
+      supabase.from('groups').select('*').eq('teacher_id', id),
+    ])
+    if (empRes.data) setEmployee(empRes.data)
+    if (grpRes.data) {
+      setGroups(grpRes.data)
+      if (grpRes.data.length > 0) {
+        const groupIds = grpRes.data.map((g: any) => g.id)
+        const { count } = await supabase.from('lessons').select('*', {count:'exact',head:true})
+          .in('group_id', groupIds).gte('date', firstOfMonth).eq('status', 'completed')
+        setLessonCount(count || 0)
       }
-      setLoading(false)
     }
-    load()
-  }, [id])
+    setLoading(false)
+  }
+
+  useEffect(() => { load() }, [id])
+
+  const handleDelete = async () => {
+    if (!employee) return
+    if (!confirm(`Удалить сотрудника «${employee.name}»? Группы, которые он ведёт, останутся, но без учителя.`)) return
+    setDeleting(true)
+    const supabase = createClient()
+    const { error } = await supabase.from('employees').delete().eq('id', employee.id)
+    if (error) {
+      alert('Ошибка при удалении: ' + error.message)
+      setDeleting(false)
+      return
+    }
+    router.push('/employees')
+  }
 
   if (loading) return <div style={{padding:32}}><Skeleton height={200} radius={12} /></div>
   if (!employee) return <div style={{padding:32}}>Сотрудник не найден</div>
@@ -53,7 +68,12 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
   return (
     <div>
       <TopBar title={employee.name} onBack={() => router.push('/employees')}
-        actions={<Btn variant="outline" size="sm" icon="✏️">Редактировать</Btn>}
+        actions={
+          <div style={{display:'flex',gap:8}}>
+            <Btn variant="outline" size="sm" icon="✏️" onClick={() => setShowEdit(true)}>Редактировать</Btn>
+            <Btn variant="danger" size="sm" icon="🗑" onClick={handleDelete} disabled={deleting}>{deleting ? 'Удаление...' : 'Удалить'}</Btn>
+          </div>
+        }
       />
       <div style={{padding:'24px 28px',display:'grid',gridTemplateColumns:'280px 1fr',gap:24,maxWidth:1100}}>
         <div style={{display:'flex',flexDirection:'column',gap:16}}>
@@ -117,26 +137,81 @@ export default function EmployeeDetailPage({ params }: { params: Promise<{ id: s
           </div>
 
           <Card style={{padding:24}}>
-            <div style={{fontWeight:700,fontSize:15,marginBottom:16}}>История начислений</div>
-            {months.map((month, i) => {
-              const lessonsThisMonth = i === 0 ? lessonCount : Math.floor(Math.random() * 5 + 10)
-              const total = employee.salary + lessonsThisMonth * bonusPerLesson
-              return (
-                <div key={month} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'12px 0',borderBottom:i<months.length-1?'1px solid var(--border)':'none'}}>
-                  <div>
-                    <div style={{fontSize:14,fontWeight:600}}>{month}</div>
-                    <div style={{fontSize:12,color:'var(--text-faint)',marginTop:2}}>Оклад {fmt.money(employee.salary)} + бонус {fmt.money(lessonsThisMonth*bonusPerLesson)}</div>
-                  </div>
-                  <div style={{display:'flex',alignItems:'center',gap:12}}>
-                    <div style={{fontSize:16,fontWeight:700}}>{fmt.money(total)}</div>
-                    <Badge status={i > 0 ? 'paid' : 'due_soon'} text={i > 0 ? 'Выплачено' : 'Ожидает'} />
-                  </div>
-                </div>
-              )
-            })}
+            <div style={{fontWeight:700,fontSize:15,marginBottom:16}}>Текущий месяц</div>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'12px 0'}}>
+              <div>
+                <div style={{fontSize:14,fontWeight:600,textTransform:'capitalize'}}>{months[0]}</div>
+                <div style={{fontSize:12,color:'var(--text-faint)',marginTop:2}}>Оклад {fmt.money(employee.salary)} + бонус {fmt.money(lessonCount*bonusPerLesson)}</div>
+              </div>
+              <div style={{display:'flex',alignItems:'center',gap:12}}>
+                <div style={{fontSize:16,fontWeight:700}}>{fmt.money(totalSalary)}</div>
+                <Badge status="due_soon" text="Ожидает" />
+              </div>
+            </div>
           </Card>
         </div>
       </div>
+
+      {employee && <EditEmployeeModal open={showEdit} onClose={() => setShowEdit(false)} employee={employee} onSaved={load} />}
     </div>
+  )
+}
+
+function EditEmployeeModal({ open, onClose, employee, onSaved }: {
+  open: boolean; onClose: () => void; employee: any; onSaved: () => void
+}) {
+  const [form, setForm] = useState({
+    name: employee.name || '',
+    role: employee.role || 'Учитель',
+    phone: employee.phone || '',
+    email: employee.email || '',
+    salary: String(employee.salary || 0),
+  })
+  const [saving, setSaving] = useState(false)
+  const set = (k: string) => (v: string) => setForm(f => ({...f,[k]:v}))
+
+  useEffect(() => {
+    setForm({
+      name: employee.name || '',
+      role: employee.role || 'Учитель',
+      phone: employee.phone || '',
+      email: employee.email || '',
+      salary: String(employee.salary || 0),
+    })
+  }, [employee])
+
+  const handleSave = async () => {
+    if (!form.name) return
+    setSaving(true)
+    const supabase = createClient()
+    await supabase.from('employees').update({
+      name: form.name,
+      role: form.role,
+      phone: form.phone,
+      email: form.email,
+      salary: parseInt(form.salary) || 0,
+    }).eq('id', employee.id)
+    setSaving(false)
+    onSaved()
+    onClose()
+  }
+
+  return (
+    <Modal open={open} onClose={onClose} title="Редактировать сотрудника">
+      <div style={{display:'flex',flexDirection:'column',gap:14}}>
+        <Input label="ФИО" value={form.name} onChange={set('name')} />
+        <Select label="Должность" value={form.role} onChange={set('role')}
+          options={[{value:'Учитель',label:'Учитель'},{value:'Администратор',label:'Администратор'}]} />
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+          <Input label="Телефон" value={form.phone} onChange={set('phone')} />
+          <Input label="Оклад (₸)" value={form.salary} onChange={set('salary')} type="number" />
+        </div>
+        <Input label="Email" value={form.email} onChange={set('email')} type="email" />
+        <div style={{display:'flex',gap:10,justifyContent:'flex-end',marginTop:8}}>
+          <Btn variant="outline" onClick={onClose}>Отмена</Btn>
+          <Btn onClick={handleSave} disabled={saving}>{saving ? 'Сохранение...' : 'Сохранить'}</Btn>
+        </div>
+      </div>
+    </Modal>
   )
 }
